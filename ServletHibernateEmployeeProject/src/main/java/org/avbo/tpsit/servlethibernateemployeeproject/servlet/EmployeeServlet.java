@@ -70,14 +70,15 @@ public class EmployeeServlet extends HttpServlet {
 	//Converte la lista in una stringa JSON
 	var jsonString = gson.toJson(employees);
 	
-	try (PrintWriter out = response.getWriter()) {
-	    //Inserisce la string a JSON nell'output
-	    out.println(jsonString);
-	}
 	//Indica il tipo di Output al client
 	response.setContentType(MediaType.APPLICATION_JSON);
 	//Indica che è andato tutto bene
 	response.setStatus(200);
+	
+	try (PrintWriter out = response.getWriter()) {
+	    //Inserisce la string a JSON nell'output
+	    out.println(jsonString);
+	}
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
