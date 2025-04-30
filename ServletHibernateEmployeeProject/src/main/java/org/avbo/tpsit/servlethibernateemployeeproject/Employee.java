@@ -20,7 +20,7 @@ import java.util.Set;
 
 /**
  *
- * @author andre
+ * @author Andrea Iannì
  */
 @Entity
 @Table(name = "Employee")
