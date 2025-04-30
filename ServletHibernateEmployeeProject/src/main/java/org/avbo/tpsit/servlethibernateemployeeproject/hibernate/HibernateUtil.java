@@ -4,6 +4,8 @@
  */
 package org.avbo.tpsit.servlethibernateemployeeproject.hibernate;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import org.avbo.tpsit.servlethibernateemployeeproject.Employee;
 import org.avbo.tpsit.servlethibernateemployeeproject.Project;
@@ -60,11 +62,81 @@ public class HibernateUtil {
 			.applySettings(configuration.getProperties()).build();
 		System.out.println("Hibernate Java Config serviceRegistry created");
 		sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+		//Da qui il codice passa una sola volta quando viene creata la
+		//  factory all'inizio, quindi allo stesso modo i dati di esempio
+		//  verranno creati un'unica volta.
+		buildTestData();
 	    } catch (Exception e) {
 		e.printStackTrace();
 	    }
 	}
 	//Restituisce la factory in memoria
 	return sessionFactory;
+    }
+    /**
+    * Metodo che crea dei dati di esempio aggiungendoli nel database
+    */
+    private static void buildTestData() {
+	//---------------------------------CREAZIONE DEI DATI DI TEST-------------------------------------
+	
+	//Crea 5 progetti da inserire nel DB
+	Project apolloRedesign = new Project();
+	apolloRedesign.setTitle("Apollo Redesign");
+
+	var neptuneExpansion = new Project();
+	neptuneExpansion.setTitle("Neptune Expansion");
+
+	var mercuryMigration = new Project();
+	mercuryMigration.setTitle("Mercury Migration");
+
+	var plutoAnalytics = new Project();
+	plutoAnalytics.setTitle("Pluto Analytics");
+
+	var jupiterDashboard = new Project();
+	jupiterDashboard.setTitle("Jupiter Dashboard");
+	//Crea una lista di impiegati
+	List<Employee> employees = new ArrayList<>();
+
+	//Non serve dare un ID, perché è stato scelto il metodo di generazione automatico
+	Employee aliceJohnson = new Employee("Alice", "Johnson");
+	//Aggiunge i relativi progetti
+	aliceJohnson.getProjects().add(apolloRedesign);
+	aliceJohnson.getProjects().add(neptuneExpansion);
+	//Inserisce l'impiegata nella lista
+	employees.add(aliceJohnson);
+	//Continua così per altri 4 impiegati
+	Employee bobSmith = new Employee("Bob", "Smith");
+	bobSmith.getProjects().add(neptuneExpansion);
+	bobSmith.getProjects().add(mercuryMigration);
+	employees.add(bobSmith);
+
+	Employee carolDavis = new Employee("Carol", "Davis");
+	carolDavis.getProjects().add(mercuryMigration);
+	carolDavis.getProjects().add(plutoAnalytics);
+	employees.add(carolDavis);
+
+	Employee davidLee = new Employee("David", "Lee");
+	davidLee.getProjects().add(plutoAnalytics);
+	davidLee.getProjects().add(jupiterDashboard);
+	employees.add(davidLee);
+
+	Employee eveMartinez = new Employee("eve", "Martinez");
+	eveMartinez.getProjects().add(apolloRedesign);
+	eveMartinez.getProjects().add(jupiterDashboard);
+	employees.add(eveMartinez);
+
+	//Crea il dao per poter scrivere sul DB
+	EmployeeDAO dao = new EmployeeDAO();
+	//Inserisce tutti e 5 gli impiegati contemporaneamente per evitare
+	//  eventuali problemi dovuti alla Sessione che si chiude e si apre.
+	//  Inoltre i progetti verranno inseriti automaticamente perché è
+	//  presente il riferimento dentro gli impiegati e la loro relazione
+	//  è stata impostata su Cascade.All, verrà anche popolata la relativa
+	//  tabella che descrive la relazione in automatico.
+	//  Appunto perché si hanno diverse relazioni è necessario fare questa
+	//  operazione in un'unica sessione, altrimenti sarà necessario usare
+	//  istanze diverse dei progetti per ogni utente per evitare di avere
+	//  l'errore di sessione chiusa
+	dao.addEmployees(employees);
     }
 }
