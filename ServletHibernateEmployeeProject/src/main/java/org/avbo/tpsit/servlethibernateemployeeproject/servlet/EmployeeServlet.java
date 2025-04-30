@@ -4,19 +4,36 @@
  */
 package org.avbo.tpsit.servlethibernateemployeeproject.servlet;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.File;
+import org.avbo.tpsit.servlethibernateemployeeproject.hibernate.HibernateUtil;
 
 /**
  *
  * @author Andrea Iannì
  */
 public class EmployeeServlet extends HttpServlet {
-
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+	super.init(config); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
+	
+	// Ottiene il context della servlet
+	ServletContext context = config.getServletContext();
+	// Ottiene il percorso in cui è stato spostato il file
+	File f = new File(context.getRealPath("hibernate_many_to_many.db"));
+	// Aggiorna il percorso del database prima che il file venga aperto
+	HibernateUtil.SetFilePath(f.getPath());
+    }
+    
+    
+    
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
