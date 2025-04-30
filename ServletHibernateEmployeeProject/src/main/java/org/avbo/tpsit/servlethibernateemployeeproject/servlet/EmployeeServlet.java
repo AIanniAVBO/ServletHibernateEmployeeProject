@@ -4,6 +4,7 @@
  */
 package org.avbo.tpsit.servlethibernateemployeeproject.servlet;
 
+import com.google.gson.Gson;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
 import java.io.IOException;
@@ -12,7 +13,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.core.MediaType;
 import java.io.File;
+import java.util.HashSet;
+import org.avbo.tpsit.servlethibernateemployeeproject.Employee;
+import org.avbo.tpsit.servlethibernateemployeeproject.Project;
+import org.avbo.tpsit.servlethibernateemployeeproject.hibernate.EmployeeDAO;
 import org.avbo.tpsit.servlethibernateemployeeproject.hibernate.HibernateUtil;
 
 /**
@@ -45,19 +51,33 @@ public class EmployeeServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
 	    throws ServletException, IOException {
-	response.setContentType("text/html;charset=UTF-8");
-	try (PrintWriter out = response.getWriter()) {
-	    /* TODO output your page here. You may use following sample code. */
-	    out.println("<!DOCTYPE html>");
-	    out.println("<html>");
-	    out.println("<head>");
-	    out.println("<title>Servlet EmployeeServlet</title>");
-	    out.println("</head>");
-	    out.println("<body>");
-	    out.println("<h1>Servlet EmployeeServlet at " + request.getContextPath() + "</h1>");
-	    out.println("</body>");
-	    out.println("</html>");
+	//Crea il dao per leggere dal DB
+	var dao = new EmployeeDAO();
+	//Ottiene la lista di tutti gli impiegati
+	var employees = dao.getAllEmployees();
+	
+	//Si assicura che non ci sia riferimenti circolari per non fare impallare GSON
+	//  infatti il Project.employees ha un riferimento verso Employee.projects e viceversa.
+	//  Questo genera un loop infinito in GSON che termina con un'eccezione
+	for (Employee employee : employees) {
+	    for (Project project : employee.getProjects()) {
+		//Elimina tutti i riferimenti verso Employee
+		project.setEmployees(new HashSet<>());
+	    }
 	}
+	
+	Gson gson = new Gson();
+	//Converte la lista in una stringa JSON
+	var jsonString = gson.toJson(employees);
+	
+	try (PrintWriter out = response.getWriter()) {
+	    //Inserisce la string a JSON nell'output
+	    out.println(jsonString);
+	}
+	//Indica il tipo di Output al client
+	response.setContentType(MediaType.APPLICATION_JSON);
+	//Indica che è andato tutto bene
+	response.setStatus(200);
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
